@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slyztrix · 软件移植承诺</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700;800&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --bg: #080c14;
+    --bg-card: #101827cc;
+    --accent: #00ff88;
+    --accent2: #00d4ff;
+    --accent3: #a78bfa;
+    --text: #e5e7eb;
+    --text-dim: #8d9bb0;
+    --border: #1d2939;
+    --glow: 0 0 20px rgba(0, 255, 136, 0.25);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    overflow-x: hidden;
+  }
+
+  #matrix-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.13;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 64px 0 40px;
+  }
+
+  .ascii-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    line-height: 1.2;
+    color: var(--accent);
+    text-shadow: 0 0 8px var(--accent);
+    white-space: pre;
+    display: inline-block;
+    margin-bottom: 24px;
+    animation: flicker 4s infinite;
+  }
+
+  @keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.55; }
+  }
+
+  .subtitle {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    letter-spacing: 8px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .tagline {
+    font-size: 17px;
+    color: var(--text-dim);
+    margin-bottom: 30px;
+    line-height: 1.8;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    background: linear-gradient(90deg, rgba(0,255,136,0.1), rgba(167,139,250,0.12));
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,255,136,0.7); }
+    50% { opacity: 0.5; box-shadow: 0 0 0 8px rgba(0,255,136,0); }
+  }
+
+  .terminal {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 32px 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), var(--glow);
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: #151f2e;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27c93f; }
+
+  .terminal-title {
+    margin-left: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .terminal-body {
+    padding: 20px;
+    font-size: 13.5px;
+    line-height: 1.85;
+  }
+
+  .prompt { color: var(--accent); }
+  .cmd { color: var(--accent2); }
+  .output { color: var(--text-dim); }
+  .success { color: var(--accent); }
+  .warn { color: #fbbf24; }
+  .danger { color: #ef4444; }
+  .plan { color: var(--accent3); }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--accent);
+    animation: blink 1s infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+  section {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: border-color 0.3s;
+  }
+
+  section:hover { border-color: var(--accent); }
+
+  h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 21px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2::before {
+    content: '▸';
+    color: var(--accent2);
+  }
+
+  h3 {
+    font-size: 15px;
+    color: var(--accent2);
+    margin: 18px 0 10px;
+  }
+
+  p { font-size: 14px; line-height: 1.95; color: var(--text-dim); }
+
+  strong { color: var(--text); }
+
+  .layers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0 16px;
+  }
+
+  .layer-tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0c1420;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .layer-tab:hover { border-color: var(--accent2); color: var(--text); }
+
+  .layer-tab.active {
+    border-color: var(--accent);
+    color: var(--bg);
+    background: var(--accent);
+    font-weight: 700;
+  }
+
+  .layer-panel {
+    display: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #0b111b;
+    padding: 20px;
+  }
+
+  .layer-panel.active { display: block; }
+
+  .layer-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .layer-code {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    color: var(--accent);
+  }
+
+  .layer-name { font-size: 15px; color: var(--text); font-weight: 600; }
+
+  .layer-desc { font-size: 13px; color: var(--text-dim); line-height: 1.9; }
+
+  .layer-list { margin-top: 10px; padding-left: 18px; }
+
+  .layer-list li {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.9;
+    list-style: none;
+  }
+
+  .layer-list li::before {
+    content: '◆ ';
+    color: var(--accent2);
+    font-size: 9px;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 40px;
+    margin-top: 16px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2), var(--accent3));
+  }
+
+  .phase {
+    position: relative;
+    padding: 16px 0 16px 16px;
+  }
+
+  .phase::before {
+    content: '';
+    position: absolute;
+    left: -33px;
+    top: 20px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  .phase.current::before {
+    background: var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .phase-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: #374151;
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+
+  .phase-badge.active { background: var(--accent); color: var(--bg); }
+  .phase-badge.done { background: var(--accent2); color: var(--bg); }
+
+  .phase-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .phase-desc { font-size: 13px; color: var(--text-dim); }
+
+  .phase-tasks { margin-top: 8px; padding-left: 16px; }
+
+  .phase-tasks li {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.9;
+    list-style: none;
+  }
+
+  .phase-tasks li::before {
+    content: '◆ ';
+    color: var(--accent2);
+    font-size: 9px;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .tech-item {
+    padding: 14px;
+    background: #0b111b;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .tech-item:hover {
+    border-color: var(--accent2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,212,255,0.15);
+  }
+
+  .tech-icon { font-size: 22px; margin-bottom: 6px; }
+  .tech-name { font-size: 12px; color: var(--text); font-weight: 600; }
+  .tech-tag { font-size: 10px; color: var(--text-dim); margin-top: 3px; line-height: 1.5; }
+
+  .pledge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .pledge-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #0b111b, #101a28);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pledge-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+
+  .pledge-card.green::before { background: var(--accent); }
+  .pledge-card.blue::before { background: var(--accent2); }
+  .pledge-card.violet::before { background: var(--accent3); }
+
+  .pledge-icon { font-size: 20px; margin-bottom: 10px; }
+  .pledge-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .pledge-text { font-size: 12.5px; color: var(--text-dim); line-height: 1.75; }
+
+  .check-list { margin-top: 10px; padding-left: 4px; }
+
+  .check-list li {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 2;
+    list-style: none;
+  }
+
+  .check-list li::before {
+    content: '[ ] ';
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .signature-area {
+    text-align: center;
+    padding: 48px 32px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 24px;
+  }
+
+  .sig-date {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    color: var(--accent2);
+    margin-bottom: 24px;
+    letter-spacing: 4px;
+  }
+
+  .sig-line {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 24px 0;
+  }
+
+  .sig-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: 8px;
+    text-shadow: 0 0 20px rgba(0,255,136,0.4);
+  }
+
+  .sig-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    letter-spacing: 3px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.9;
+  }
+
+  footer .heart { color: var(--accent3); }
+
+  #boot-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    transition: opacity 0.8s ease;
+  }
+
+  #boot-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+  .boot-text {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 14px;
+    text-align: center;
+    line-height: 2;
+  }
+
+  .boot-bar {
+    width: 240px;
+    height: 4px;
+    background: #151f2e;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .boot-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.08s linear;
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #1d2939; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  @media (max-width: 640px) {
+    .ascii-logo { font-size: 6px; }
+    section { padding: 20px; }
+    h2 { font-size: 17px; }
+    .sig-name { font-size: 20px; letter-spacing: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="boot-overlay">
+  <div class="boot-text" id="boot-output"></div>
+  <div class="boot-bar"><div class="boot-fill" id="boot-fill"></div></div>
+</div>
+
+<canvas id="matrix-bg"></canvas>
+
+<div class="container">
+
+  <header class="hero">
+<pre class="ascii-logo">
+  ____   _              _          _       
+ / ___| | | _   _  ____| |_  _ __ (_)__  __
+ \___ \ | || | | ||_  /| __|| '__|| |\ \/ /
+  ___) || || |_| | / / | |_ | |   | | >  < 
+ |____/ |_| \__, |/___| \__||_|   |_|/_/\_\
+            |___/                          
+</pre>
+    <div class="subtitle">SOFTWARE · PORTING · DIVISION</div>
+    <div class="tagline">把常用软件搬到 SaylterOS 上：<br>不做演示系统，要做能日常用的系统</div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      STATUS: BOOTSTRAP · 底座设计与首批移植清单
+    </div>
+  </header>
+
+  <div class="terminal">
+    <div class="terminal-header">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green"></span>
+      <span class="terminal-title">root@saylter — ~/Slyztrix</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="prompt">root@saylter</span>:<span class="cmd">~</span>$ cat PLEDGE.md</div>
+      <div class="output">
+        <br>
+        █ PROJECT: Slyztrix — SaylterOS 的软件移植与兼容层<br>
+        █ GOAL: 让这台自研系统承担日常使用，而不是只活在截图里<br>
+        █ SCOPE: 运行时底座 / 纯计算库 / 命令行工具 / 窗口应用<br>
+        █ RULE: 不改内核核心，第三方代码不进内核镜像<br>
+        █ START: 2026-11-21<br>
+        <br>
+        <span class="success">[OK] 已有底座：SlyzFS v2、.slys 固定基址模块、SlysKernelApi</span><br>
+        <span class="success">[OK] 已有底座：GuiExternalHost 窗口宿主、SlyerType 16x32 字形</span><br>
+        <span class="success">[OK] 已有应用：VizCormin 编辑器、文件管理器、终端、浏览器子集</span><br>
+        <span class="success">[OK] 已有能力：E1000 + TCP/IP + TLS、MP3 解码与音频驱动</span><br>
+        <span class="plan">[NEXT] 首先移植 musl libc：静态链接 + syscall 垫片，先让 C 程序能编译运行</span><br>
+        <span class="plan">[NEXT] libslyzposix 只保留 OS 适配层与缺失接口，不再重复实现 libc</span><br>
+        <span class="plan">[NEXT] 压缩/解压、图片查看、编码转换：先补齐日常闭环</span><br>
+      </div>
+      <br>
+      <div><span class="prompt">root@saylter</span>:<span class="cmd">~</span>$ slyztrix status</div>
+      <div class="output">  libc       : musl (static first) <span class="plan">DESIGN</span></div>
+      <div class="output">  libc glue  : syscall / os port   <span class="plan">DESIGN</span></div>
+      <div class="output">  packaging  : .spk + sha256     <span class="plan">DESIGN</span></div>
+      <div class="output">  p0 tools   : zip / unzip / tar / gzip / iconv   <span class="plan">PLANNED</span></div>
+      <div class="output">  p0 apps    : image viewer / archive manager     <span class="plan">PLANNED</span></div>
+      <div class="output">  p1 apps    : markdown preview / pdf text / csv  <span class="plan">PLANNED</span></div>
+      <div class="output">  p2 tools   : git subset / slyzpkg / lua         <span class="plan">PLANNED</span></div>
+      <div class="output">  l4 goals   : electron shell / js engine / web   <span class="plan">ROADMAP</span></div>
+      <div><span class="prompt">root@saylter</span>:<span class="cmd">~</span>$ <span class="cursor"></span></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>为什么需要 Slyztrix</h2>
+    <p>
+      一个操作系统能不能日常用，不取决于内核里有多少子系统，而取决于最普通的一天：
+      写一份带中文的文档、看一张照片、解压别人发来的压缩包、听一首歌、
+      打开一个网页、改一行代码、把文件传出去。
+    </p>
+    <br>
+    <p>
+      SaylterOS 已经跨过了“能启动、能交互、有窗口”的门槛。Slyztrix 处理的是下一道门槛：
+      <strong>软件生态</strong>。它不重写内核，也不假装兼容 Windows 二进制；
+      它把常用软件按可移植性分级，能搬的搬，不能搬的用原生实现替代，
+      并把每一条限制写在明面上。
+    </p>
+    <br>
+    <p>
+      判定标准只有一条：<strong>连续一周不用别的系统完成日常工作，且不需要“忍一忍”。</strong>
+    </p>
+  </section>
+
+  <section>
+    <h2>移植分级</h2>
+    <p>不是所有软件都用同一种移植方式。先按依赖复杂度分级，再决定路线和投入顺序。</p>
+
+    <div class="layers" id="layer-tabs">
+      <button class="layer-tab active" data-layer="l0">L0 · C 运行时（musl）</button>
+      <button class="layer-tab" data-layer="l1">L1 · 纯计算库</button>
+      <button class="layer-tab" data-layer="l2">L2 · 命令行工具</button>
+      <button class="layer-tab" data-layer="l3">L3 · 窗口应用</button>
+      <button class="layer-tab" data-layer="l4">L4 · 攻坚目标</button>
+    </div>
+
+    <div class="layer-panel active" id="panel-l0">
+      <div class="layer-head">
+        <span class="layer-code">L0</span>
+        <span class="layer-name">C 运行时底座 · musl libc + syscall 垫片</span>
+      </div>
+      <div class="layer-desc">
+        第一优先级不是再造一套 C 库，而是移植 musl libc（MIT，轻量、静态链接友好）。
+        上游 C 程序的 stdio、malloc、string、math、time 直接复用，移植工作收敛到
+        “系统调用适配”这一层。musl 先静态链接进 .slys；动态链接（ldso）后置。
+      </div>
+      <ul class="layer-list">
+        <li>musl 静态链接：crt / TLS / stdio / malloc / string / math / time</li>
+        <li>syscall 垫片：open/read/write/close/stat/mkdir → SlyzFS v2，盘符 C:/R:/D:</li>
+        <li>内存：brk/mmap → 内核堆与页帧池；只读映射提供可执行内存</li>
+        <li>线程：第一阶段单线程 TLS；pthread 后续映射到协作任务</li>
+        <li>信号：最小实现（SIGSEGV 交给蓝屏与故障报告）</li>
+        <li>网络：socket 子集 → 自研 TCP/IP 栈，先阻塞式</li>
+        <li>图形：GuiExternalHost + win_*，与 libc 解耦</li>
+        <li>编码：locale 固定 C.UTF-8，GBK 仅在边界转换</li>
+      </ul>
+    </div>
+
+    <div class="layer-panel" id="panel-l1">
+      <div class="layer-head">
+        <span class="layer-code">L1</span>
+        <span class="layer-name">纯计算库 · 静态链接进模块</span>
+      </div>
+      <div class="layer-desc">
+        不依赖操作系统服务、只做数据变换的库。编译成目标文件后链接进 .slys 或 .slyzd，
+        通过 C ABI 直接调用，是最划算的一类移植。
+      </div>
+      <ul class="layer-list">
+        <li>压缩：miniz（zlib 兼容）、libdeflate</li>
+        <li>图像：stb_image、libpng、libjpeg-turbo（按需裁剪）</li>
+        <li>数据库：SQLite amalgamation（单文件，无系统依赖）</li>
+        <li>脚本：Lua 5.4（轻量、易嵌入、替代 Python 子集）</li>
+        <li>文本：utf8proc 子集、base64、SHA-256（已有自研实现）</li>
+        <li>字体：FreeType 子集（仅在需要复杂排版时引入）</li>
+      </ul>
+    </div>
+
+    <div class="layer-panel" id="panel-l2">
+      <div class="layer-head">
+        <span class="layer-code">L2</span>
+        <span class="layer-name">命令行工具 · 原生实现优先</span>
+      </div>
+      <div class="layer-desc">
+        CLI 工具的复杂度不在算法，而在 POSIX 语义。优先用自研实现覆盖常用参数，
+        不追求 100% 兼容；确实需要移植时，只搬核心逻辑，I/O 走 musl 与 syscall 垫片。
+      </div>
+      <ul class="layer-list">
+        <li>压缩：zip / unzip / tar / gzip / zstd（解压优先）</li>
+        <li>文本：grep / sed / awk 子集、diff、hexdump、wc、sort、uniq</li>
+        <li>编码：iconv 子集（UTF-8 / GBK / UTF-16）</li>
+        <li>校验：sha256sum / md5sum / crc32</li>
+        <li>网络：curl（已有）、wget 子集、scp 子集</li>
+        <li>开发：make 子集、cc 包装、nm/objdump 只读子集</li>
+      </ul>
+    </div>
+
+    <div class="layer-panel" id="panel-l3">
+      <div class="layer-head">
+        <span class="layer-code">L3</span>
+        <span class="layer-name">窗口应用 · 复用核心，重写前端</span>
+      </div>
+      <div class="layer-desc">
+        GUI 应用不移植整个工具包。核心算法与数据格式复用，界面改写成
+        SaylterOS 的窗口与字形 API。VizCormin 已经验证了这条路。
+      </div>
+      <ul class="layer-list">
+        <li>图片查看器：BMP / PNG / JPEG，缩放与旋转</li>
+        <li>压缩包管理器：列表、解压、打包、预览文本</li>
+        <li>Markdown 预览：解析 + 排版 + 导出 HTML/PDF 文本层</li>
+        <li>PDF 阅读器：文本层渲染优先，复杂排版后置</li>
+        <li>表格：CSV / TSV 编辑，公式子集</li>
+        <li>代码编辑：VizCormin（已完成独立窗口化）</li>
+      </ul>
+    </div>
+
+    <div class="layer-panel" id="panel-l4">
+      <div class="layer-head">
+        <span class="layer-code">L4</span>
+        <span class="layer-name">攻坚目标 · 浏览器与 Electron 生态</span>
+      </div>
+      <div class="layer-desc">
+        这是 Slyztrix 存在的最终理由：常用软件里最大的一块就是浏览器与 Electron。
+        如果只能用自己的 HTML 子集，等于把用户和自家应用一起挡在门外。
+        所以这里不划“不做”，只划阶段和缺口。
+      </div>
+      <ul class="layer-list">
+        <li>阶段一：Electron 应用外壳 —— Node 子集 + 窗口/文件/网络 API，先让自家应用与简单 Electron 应用跑起来</li>
+        <li>阶段二：JavaScript 引擎 —— 先接 QuickJS 过渡，再评估 V8（JIT 需要可执行内存与更完整的运行时）</li>
+        <li>阶段三：渲染引擎 —— Chromium content 层 / WebKit / Servo，逐步替换自研 HTML 子集</li>
+        <li>阶段四：多进程模型 —— renderer 进程隔离，依赖每进程地址空间与 IPC</li>
+        <li>底座缺口：mmap / fork / exec / 信号 / 线程、动态链接器、GPU 或高性能软件光栅</li>
+        <li>Adobe 全家桶（Photoshop / Premiere / Illustrator / After Effects）暂缓：闭源、GPU 与插件体系重，近期不排期；先用原生图片查看、轻量编辑与 PDF 文本层覆盖基础需求</li>
+        <li>验收标准：一个真实 Electron 应用 + 20 个主流网站可用，而不是“能打开首页”</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>首批移植清单</h2>
+    <h3>P0 · 日常闭环（先让系统“够用”）</h3>
+    <ul class="check-list">
+      <li>musl libc 静态移植：stdio / malloc / string / math / time 可用</li>
+      <li>GBK ↔ UTF-8 转换，打开旧文档不乱码</li>
+      <li>zip / tar / gzip 解压与打包，文件管理器右键可用</li>
+      <li>图片查看器：BMP / PNG / JPEG，支持缩放</li>
+      <li>文件管理器补齐复制、移动、重命名、多选、删除确认</li>
+      <li>grep / sed / wc / sort：终端里的基本文本处理</li>
+      <li>剪贴板：跨窗口复制粘贴文本</li>
+    </ul>
+
+    <h3>P1 · 生产力（能写、能看、能整理）</h3>
+    <ul class="check-list">
+      <li>Markdown 预览与导出，支持中文排版</li>
+      <li>PDF 文本层阅读与复制</li>
+      <li>CSV / TSV 表格查看与简单编辑</li>
+      <li>Electron 应用外壳：Node 子集 + 窗口/文件/网络 API，先支持自家应用</li>
+      <li>截图工具，保存到 SlyzFS 并复制路径</li>
+      <li>输入法完善：候选翻页、标点、用户词库</li>
+    </ul>
+
+    <h3>P2 · 开发与扩展（可持续）</h3>
+    <ul class="check-list">
+      <li>Git 本地子集：init / add / commit / log / diff</li>
+      <li>SlyzPkg 包管理器：.spk 包、SHA-256、本地仓库</li>
+      <li>Lua 脚本运行时，替代不可移植的 Python 工具</li>
+      <li>性能面板：帧时间、堆占用、模块加载耗时</li>
+      <li>移植模板：新建 .slys 应用的脚手架与验收脚本</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>里程碑</h2>
+    <div class="timeline">
+
+      <div class="phase current">
+        <div class="phase-header">
+          <span class="phase-badge active">T0</span>
+          <span class="phase-title">musl 底座与模板</span>
+        </div>
+        <div class="phase-desc">先解决所有 C 程序共用的底座：musl libc 与 syscall 垫片</div>
+        <ul class="phase-tasks">
+          <li>musl libc 静态移植：crt、TLS、stdio、malloc、string、math、time</li>
+          <li>syscall 垫片：文件 / 内存 / 时间 / 退出，映射到 SlysKernelApi</li>
+          <li>libslyzposix：只保留 OS 适配与 musl 缺失接口</li>
+          <li>.slys 应用脚手架：链接脚本、入口表、构建脚本</li>
+          <li>移植验收脚本：启动、绘制、退出、无泄漏</li>
+          <li>包格式 .spk：清单、依赖、SHA-256、安装路径</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-header">
+          <span class="phase-badge">T1</span>
+          <span class="phase-title">日常闭环</span>
+        </div>
+        <div class="phase-desc">压缩、图片、编码、文件操作：没有这些就谈不上日常</div>
+        <ul class="phase-tasks">
+          <li>miniz 接入并导出 C API</li>
+          <li>图片查看器窗口（BMP / PNG / JPEG）</li>
+          <li>压缩包管理器窗口</li>
+          <li>编码转换工具与文件管理器集成</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-header">
+          <span class="phase-badge">T2</span>
+          <span class="phase-title">生产力</span>
+        </div>
+        <div class="phase-desc">从“能用”到“愿意用”</div>
+        <ul class="phase-tasks">
+          <li>Markdown 预览与导出</li>
+          <li>PDF 文本层阅读</li>
+          <li>CSV 表格与轻量文档</li>
+          <li>输入法与剪贴板完善</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-header">
+          <span class="phase-badge">T3</span>
+          <span class="phase-title">开发与生态</span>
+        </div>
+        <div class="phase-desc">让第三方也能按模板移植</div>
+        <ul class="phase-tasks">
+          <li>Git 本地子集</li>
+          <li>SlyzPkg 与本地仓库</li>
+          <li>Lua 运行时</li>
+          <li>浏览器内核攻坚启动：JS 引擎与 content 层选型</li>
+          <li>移植文档与示例模块</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>技术栈</h2>
+    <p>目标平台是 SaylterOS 的模块 ABI，不从零造新系统。</p>
+    <div class="tech-grid">
+      <div class="tech-item"><div class="tech-icon">🧩</div><div class="tech-name">SlysKernelApi</div><div class="tech-tag">唯一内核接口</div></div>
+      <div class="tech-item"><div class="tech-icon">📦</div><div class="tech-name">.slys / .slyzd</div><div class="tech-tag">固定基址模块</div></div>
+      <div class="tech-item"><div class="tech-icon">💾</div><div class="tech-name">SlyzFS v2</div><div class="tech-tag">文件与权限</div></div>
+      <div class="tech-item"><div class="tech-icon">🪟</div><div class="tech-name">GuiExternalHost</div><div class="tech-tag">窗口内容区</div></div>
+      <div class="tech-item"><div class="tech-icon">🔤</div><div class="tech-name">SlyerType</div><div class="tech-tag">16x32 字形</div></div>
+      <div class="tech-item"><div class="tech-icon">🧱</div><div class="tech-name">musl libc</div><div class="tech-tag">C 运行时底座</div></div>
+      <div class="tech-item"><div class="tech-icon">⚙️</div><div class="tech-name">C11</div><div class="tech-tag">移植主体</div></div>
+      <div class="tech-item"><div class="tech-icon">🧪</div><div class="tech-name">QEMU</div><div class="tech-tag">验收环境</div></div>
+      <div class="tech-item"><div class="tech-icon">🔐</div><div class="tech-name">SHA-256</div><div class="tech-tag">包与文件校验</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>承诺</h2>
+    <div class="pledge-grid">
+
+      <div class="pledge-card green">
+        <div class="pledge-icon">🛡️</div>
+        <div class="pledge-title">不靠改内核换功能</div>
+        <div class="pledge-text">移植只通过模块 ABI、SlyzFS 与窗口宿主接入。内核保持精简，应用崩溃不应拖垮系统。</div>
+      </div>
+
+      <div class="pledge-card blue">
+        <div class="pledge-icon">📐</div>
+        <div class="pledge-title">每个移植都有验收脚本</div>
+        <div class="pledge-text">能启动、能绘制、能退出、无泄漏、无未处理错误。没有验收脚本的移植不算完成。</div>
+      </div>
+
+      <div class="pledge-card violet">
+        <div class="pledge-icon">🔍</div>
+        <div class="pledge-title">限制写在明面上</div>
+        <div class="pledge-text">单地址空间、无 fork/exec、无 GPU 加速、无完整 POSIX。写清楚，才能决定下一步往哪走。</div>
+      </div>
+
+      <div class="pledge-card green">
+        <div class="pledge-icon">📦</div>
+        <div class="pledge-title">可追溯的包</div>
+        <div class="pledge-text">每个 .spk 带版本、来源、许可证与 SHA-256。安装前校验，升级可回退。</div>
+      </div>
+
+      <div class="pledge-card blue">
+        <div class="pledge-icon">🧭</div>
+        <div class="pledge-title">原生实现优先</div>
+        <div class="pledge-text">能用两百行原生代码覆盖的常用参数，不拖进一个完整上游工具链。复杂度要花在刀刃上。</div>
+      </div>
+
+      <div class="pledge-card violet">
+        <div class="pledge-icon">♻️</div>
+        <div class="pledge-title">保留出处与许可证</div>
+        <div class="pledge-text">移植代码保留上游版权与许可证，修改处标注清楚。不把别人的成果伪装成自研。</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>日常使用验收</h2>
+    <p>“能日常用”不是感觉，是一张可以逐项打勾的清单：</p>
+    <ul class="check-list">
+      <li>开机登录，用文件管理器找到并打开一份旧文档</li>
+      <li>中文输入正常，标点、候选、退格、换行都符合预期</li>
+      <li>写一份 Markdown 文档并保存，再打开确认内容一致</li>
+      <li>查看一张 PNG/JPEG，缩放后不糊、不崩</li>
+      <li>解压一个 zip，文件完整、目录结构正确</li>
+      <li>播放一首 MP3，暂停、继续、调音量都正常</li>
+      <li>用 VizCormin 修改一行代码并保存</li>
+      <li>用 curl 下载文件并核对 SHA-256</li>
+      <li>窗口可拖动、缩放、最小化、关闭，不残留画面</li>
+      <li>关机走 ACPI S5，下次启动文件仍在</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>诚实的边界</h2>
+    <h3>当前架构决定的上限</h3>
+    <p>
+      单地址空间与协作式调度意味着没有进程隔离，也没有 fork/exec；
+      软件渲染意味着 PDF、视频与复杂排版需要谨慎裁剪；
+      没有完整 POSIX 意味着上游代码需要适配层。
+      这些限制不会因为“再努力一点”就消失，它们是路线选择的结果。
+    </p>
+    <br>
+    <h3>当前阶段不承诺，但路线明确</h3>
+    <p>
+      不承诺任意 Windows/Linux 二进制直接运行。但 Chromium、Electron、Java、.NET
+      不是“不做”，而是要先补齐底座缺口：每进程地址空间、mmap/fork/exec、
+      信号与线程、动态链接器、可执行内存。这些缺口按 L4 的阶段推进，
+      每补齐一项就解锁一批应用；在此之前，先用自研 HTML 子集与 Electron
+      外壳保证自家软件可用，再逐步换成通用内核。
+      Adobe 全家桶是另一类：闭源、GPU 与插件体系重、没有可移植的源码入口，
+      暂不排期；基础图像与文档需求由原生轻量工具覆盖。
+    </p>
+    <br>
+    <h3>我们承诺</h3>
+    <p>
+      <strong>每完成一项，就有一个能跑的应用、一份验收记录、一条写清楚的限制。</strong>
+      先让系统撑起普通的一天，再讨论更大的生态。
+    </p>
+  </section>
+
+  <div class="signature-area">
+    <div class="sig-date">EST. 2026 · 11 · 21</div>
+    <hr class="sig-line">
+    <div class="sig-name">SLYZTRIX</div>
+    <div class="sig-label">SOFTWARE PORTING DIVISION · SAYLTEROS</div>
+    <hr class="sig-line">
+    <p style="font-size:13px;color:var(--text-dim);font-style:italic;">
+      "系统的价值不在于它能启动，而在于它能不能替你完成今天的工作。"
+    </p>
+  </div>
+
+  <footer>
+    Slyztrix · Porting common software to SaylterOS · Built with <span class="heart">♥</span> and C11<br>
+    Ruanftrix / SaylterOS 生态项目 · 2026
+  </footer>
+
+</div>
+
+<script>
+/* ---------------- 启动遮罩 ---------------- */
+const bootLines = [
+  '[PLEDGE] Slyztrix bootstrap v0.1',
+  '[PLEDGE] target: SaylterOS x86_64 module ABI',
+  '[PLEDGE] loading porting layers ... OK',
+  '[PLEDGE] runtime: musl libc + syscall glue (design)',
+  '[PLEDGE] packages: .spk + sha256 (design)',
+  '[OK]  Slyztrix pledge loaded. Make it usable.',
+];
+
+let bi = 0;
+const bootEl = document.getElementById('boot-output');
+const fillEl = document.getElementById('boot-fill');
+const overlay = document.getElementById('boot-overlay');
+
+function typeLine(line) {
+  return new Promise(resolve => {
+    let i = 0;
+    const div = document.createElement('div');
+    bootEl.appendChild(div);
+    const timer = setInterval(() => {
+      div.textContent += line[i++];
+      fillEl.style.width = ((bi / bootLines.length) * 100 +
+                            (i / line.length / bootLines.length) * 100) + '%';
+      if (i >= line.length) {
+        clearInterval(timer);
+        setTimeout(resolve, 180);
+      }
+    }, 18);
+  });
+}
+
+async function boot() {
+  for (let i = 0; i < bootLines.length; i++) {
+    await typeLine(bootLines[i]);
+    bi = i + 1;
+  }
+  fillEl.style.width = '100%';
+  setTimeout(() => {
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.remove(), 800);
+  }, 350);
+}
+
+boot();
+
+/* ---------------- 矩阵背景 ---------------- */
+const canvas = document.getElementById('matrix-bg');
+const ctx = canvas.getContext('2d');
+let W, H, cols, drops;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  cols = Math.floor(W / 16);
+  drops = new Array(cols).fill(0).map(() => Math.random() * -50);
+}
+resize();
+window.addEventListener('resize', resize);
+
+function draw() {
+  ctx.fillStyle = 'rgba(8, 12, 20, 0.05)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#00ff88';
+  ctx.font = '14px JetBrains Mono, monospace';
+  for (let i = 0; i < cols; i++) {
+    const ch = String.fromCharCode(0x30A0 + Math.random() * 96);
+    ctx.fillText(ch, i * 16, drops[i] * 16);
+    if (drops[i] * 16 > H && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+}
+setInterval(draw, 55);
+
+/* ---------------- 移植分级切换 ---------------- */
+const tabs = document.querySelectorAll('.layer-tab');
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.layer-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-' + tab.dataset.layer);
+    if (panel) panel.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>
